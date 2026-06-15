@@ -195,10 +195,165 @@ const STOCKS = [
 ];
 let selStock = 'OQEP';
 let selHistStock = 'OQEP';
+
+// ── PRELOADED DATA ───────────────────────────────────────
+const PRELOADED = {
+  OQEP:[
+    {date:'2026-04-09',open:0.472,high:0.473,low:0.464,close:0.466,volume:3437000},
+    {date:'2026-04-13',open:0.472,high:0.480,low:0.472,close:0.477,volume:15669000},
+    {date:'2026-04-14',open:0.477,high:0.478,low:0.474,close:0.477,volume:12211000},
+    {date:'2026-04-15',open:0.476,high:0.494,low:0.474,close:0.488,volume:31465000},
+    {date:'2026-04-16',open:0.488,high:0.505,low:0.488,close:0.495,volume:35357000},
+    {date:'2026-04-20',open:0.493,high:0.498,low:0.490,close:0.495,volume:14724000},
+    {date:'2026-04-21',open:0.495,high:0.498,low:0.495,close:0.498,volume:14753000},
+    {date:'2026-04-22',open:0.501,high:0.510,low:0.501,close:0.505,volume:28724000},
+    {date:'2026-04-23',open:0.504,high:0.515,low:0.503,close:0.510,volume:36692000},
+    {date:'2026-04-27',open:0.512,high:0.512,low:0.507,close:0.508,volume:16673000},
+    {date:'2026-04-28',open:0.507,high:0.511,low:0.507,close:0.511,volume:12303000},
+    {date:'2026-04-29',open:0.510,high:0.512,low:0.509,close:0.512,volume:7235000},
+    {date:'2026-04-30',open:0.513,high:0.517,low:0.513,close:0.517,volume:16596000},
+    {date:'2026-05-04',open:0.526,high:0.531,low:0.525,close:0.530,volume:21619000},
+    {date:'2026-05-05',open:0.533,high:0.548,low:0.532,close:0.537,volume:51662000},
+    {date:'2026-05-06',open:0.538,high:0.539,low:0.492,close:0.510,volume:14963000},
+    {date:'2026-05-07',open:0.508,high:0.511,low:0.503,close:0.510,volume:14320000},
+    {date:'2026-05-11',open:0.507,high:0.507,low:0.503,close:0.503,volume:8628000},
+    {date:'2026-05-12',open:0.501,high:0.503,low:0.499,close:0.500,volume:6285000},
+    {date:'2026-05-13',open:0.500,high:0.500,low:0.493,close:0.495,volume:8977000},
+    {date:'2026-05-14',open:0.494,high:0.497,low:0.470,close:0.489,volume:12218000},
+    {date:'2026-05-18',open:0.489,high:0.490,low:0.471,close:0.475,volume:15537000},
+    {date:'2026-05-19',open:0.476,high:0.480,low:0.466,close:0.469,volume:9618000},
+    {date:'2026-05-20',open:0.468,high:0.469,low:0.455,close:0.457,volume:17758000},
+    {date:'2026-05-21',open:0.461,high:0.491,low:0.461,close:0.488,volume:16228000},
+    {date:'2026-05-25',open:0.484,high:0.484,low:0.479,close:0.479,volume:8630000},
+    {date:'2026-06-01',open:0.474,high:0.477,low:0.473,close:0.473,volume:5076000},
+    {date:'2026-06-02',open:0.474,high:0.475,low:0.471,close:0.471,volume:7145000},
+    {date:'2026-06-03',open:0.472,high:0.472,low:0.466,close:0.468,volume:12013000},
+    {date:'2026-06-04',open:0.469,high:0.469,low:0.456,close:0.457,volume:11053000},
+    {date:'2026-06-08',open:0.449,high:0.468,low:0.447,close:0.466,volume:9216000},
+    {date:'2026-06-09',open:0.466,high:0.469,low:0.463,close:0.469,volume:8489000},
+  ],
+  OQGN:[
+    {date:'2026-04-16',open:0.272,high:0.279,low:0.272,close:0.275,volume:27094000},
+    {date:'2026-04-20',open:0.273,high:0.277,low:0.273,close:0.273,volume:10345000},
+    {date:'2026-04-21',open:0.271,high:0.271,low:0.265,close:0.266,volume:16553000},
+    {date:'2026-04-22',open:0.266,high:0.266,low:0.262,close:0.262,volume:15408000},
+    {date:'2026-04-23',open:0.260,high:0.264,low:0.260,close:0.262,volume:22197000},
+    {date:'2026-04-27',open:0.263,high:0.267,low:0.263,close:0.265,volume:43411000},
+    {date:'2026-04-28',open:0.263,high:0.267,low:0.263,close:0.265,volume:33658000},
+    {date:'2026-04-29',open:0.269,high:0.274,low:0.268,close:0.273,volume:27521000},
+    {date:'2026-04-30',open:0.269,high:0.274,low:0.268,close:0.273,volume:27612000},
+    {date:'2026-05-04',open:0.269,high:0.270,low:0.267,close:0.268,volume:16969000},
+    {date:'2026-05-05',open:0.269,high:0.274,low:0.269,close:0.270,volume:21850000},
+    {date:'2026-05-06',open:0.270,high:0.272,low:0.266,close:0.268,volume:13128000},
+    {date:'2026-05-07',open:0.269,high:0.272,low:0.266,close:0.272,volume:12439000},
+    {date:'2026-05-11',open:0.274,high:0.276,low:0.273,close:0.274,volume:27612000},
+    {date:'2026-05-12',open:0.275,high:0.270,low:0.273,close:0.273,volume:8018000},
+    {date:'2026-05-13',open:0.273,high:0.274,low:0.267,close:0.268,volume:15759000},
+    {date:'2026-05-14',open:0.270,high:0.270,low:0.247,close:0.255,volume:17471000},
+    {date:'2026-05-18',open:0.250,high:0.250,low:0.225,close:0.234,volume:29732000},
+    {date:'2026-05-19',open:0.234,high:0.237,low:0.224,close:0.224,volume:15323000},
+    {date:'2026-05-20',open:0.223,high:0.223,low:0.203,close:0.212,volume:16467000},
+    {date:'2026-05-21',open:0.220,high:0.230,low:0.220,close:0.228,volume:32204000},
+    {date:'2026-05-25',open:0.236,high:0.240,low:0.233,close:0.240,volume:21111000},
+    {date:'2026-06-01',open:0.238,high:0.240,low:0.237,close:0.240,volume:14788000},
+    {date:'2026-06-02',open:0.241,high:0.243,low:0.238,close:0.239,volume:19248000},
+    {date:'2026-06-03',open:0.238,high:0.240,low:0.232,close:0.235,volume:17299000},
+    {date:'2026-06-04',open:0.234,high:0.236,low:0.228,close:0.228,volume:8471000},
+    {date:'2026-06-08',open:0.224,high:0.232,low:0.217,close:0.229,volume:23944000},
+    {date:'2026-06-09',open:0.230,high:0.230,low:0.227,close:0.229,volume:14430000},
+    {date:'2026-06-10',open:0.229,high:0.231,low:0.228,close:0.230,volume:10115000},
+    {date:'2026-06-11',open:0.231,high:0.231,low:0.227,close:0.230,volume:18546000},
+  ],
+  OQBI:[
+    {date:'2026-04-09',open:0.292,high:0.294,low:0.286,close:0.288,volume:12680000},
+    {date:'2026-04-13',open:0.303,high:0.308,low:0.303,close:0.308,volume:67915000},
+    {date:'2026-04-14',open:0.308,high:0.311,low:0.308,close:0.310,volume:60715000},
+    {date:'2026-04-15',open:0.311,high:0.313,low:0.309,close:0.311,volume:52127000},
+    {date:'2026-04-16',open:0.311,high:0.313,low:0.309,close:0.311,volume:52127000},
+    {date:'2026-04-20',open:0.312,high:0.314,low:0.310,close:0.312,volume:40970000},
+    {date:'2026-04-21',open:0.312,high:0.312,low:0.308,close:0.308,volume:18298000},
+    {date:'2026-04-23',open:0.308,high:0.308,low:0.304,close:0.305,volume:16925000},
+    {date:'2026-04-27',open:0.302,high:0.307,low:0.302,close:0.302,volume:29365000},
+    {date:'2026-04-28',open:0.305,high:0.311,low:0.304,close:0.310,volume:63962000},
+    {date:'2026-04-29',open:0.310,high:0.314,low:0.310,close:0.313,volume:69660000},
+    {date:'2026-04-30',open:0.314,high:0.317,low:0.314,close:0.316,volume:67163000},
+    {date:'2026-05-04',open:0.316,high:0.321,low:0.316,close:0.321,volume:27643000},
+    {date:'2026-05-05',open:0.322,high:0.323,low:0.319,close:0.321,volume:22356000},
+    {date:'2026-05-06',open:0.320,high:0.323,low:0.317,close:0.319,volume:47760000},
+    {date:'2026-05-07',open:0.320,high:0.320,low:0.316,close:0.320,volume:10675000},
+    {date:'2026-05-11',open:0.319,high:0.322,low:0.319,close:0.322,volume:56689000},
+    {date:'2026-05-12',open:0.323,high:0.323,low:0.320,close:0.322,volume:21619000},
+    {date:'2026-05-14',open:0.321,high:0.322,low:0.303,close:0.314,volume:12059000},
+    {date:'2026-05-18',open:0.310,high:0.310,low:0.287,close:0.308,volume:24521000},
+    {date:'2026-05-19',open:0.300,high:0.300,low:0.278,close:0.278,volume:156093000},
+    {date:'2026-05-20',open:0.272,high:0.272,low:0.251,close:0.251,volume:21366000},
+    {date:'2026-05-21',open:0.260,high:0.275,low:0.260,close:0.267,volume:38094000},
+    {date:'2026-05-25',open:0.265,high:0.267,low:0.261,close:0.263,volume:46371000},
+    {date:'2026-06-01',open:0.261,high:0.271,low:0.260,close:0.271,volume:51374000},
+    {date:'2026-06-02',open:0.273,high:0.276,low:0.266,close:0.267,volume:51825000},
+    {date:'2026-06-03',open:0.266,high:0.268,low:0.259,close:0.262,volume:30313000},
+    {date:'2026-06-04',open:0.262,high:0.264,low:0.260,close:0.262,volume:9513000},
+    {date:'2026-06-08',open:0.251,high:0.267,low:0.245,close:0.263,volume:44843000},
+    {date:'2026-06-09',open:0.263,high:0.265,low:0.257,close:0.262,volume:14803000},
+  ],
+  ABRJ:[
+    {date:'2026-04-15',open:0.463,high:0.467,low:0.460,close:0.460,volume:1885000},
+    {date:'2026-04-16',open:0.463,high:0.467,low:0.459,close:0.460,volume:672357},
+    {date:'2026-04-20',open:0.460,high:0.462,low:0.451,close:0.451,volume:1280000},
+    {date:'2026-04-21',open:0.453,high:0.453,low:0.447,close:0.447,volume:873438},
+    {date:'2026-04-22',open:0.447,high:0.447,low:0.439,close:0.440,volume:971700},
+    {date:'2026-04-23',open:0.439,high:0.440,low:0.437,close:0.438,volume:627398},
+    {date:'2026-04-27',open:0.433,high:0.445,low:0.433,close:0.435,volume:2741000},
+    {date:'2026-04-28',open:0.435,high:0.436,low:0.429,close:0.430,volume:2320000},
+    {date:'2026-04-29',open:0.432,high:0.432,low:0.425,close:0.425,volume:920875},
+    {date:'2026-04-30',open:0.425,high:0.449,low:0.425,close:0.448,volume:5397000},
+    {date:'2026-05-04',open:0.486,high:0.498,low:0.486,close:0.497,volume:6410000},
+    {date:'2026-05-05',open:0.497,high:0.499,low:0.491,close:0.496,volume:2431000},
+    {date:'2026-05-06',open:0.495,high:0.497,low:0.488,close:0.496,volume:2863000},
+    {date:'2026-05-07',open:0.493,high:0.496,low:0.490,close:0.495,volume:1353000},
+    {date:'2026-05-11',open:0.494,high:0.494,low:0.488,close:0.492,volume:867291},
+    {date:'2026-05-12',open:0.492,high:0.492,low:0.486,close:0.491,volume:949599},
+    {date:'2026-05-13',open:0.491,high:0.491,low:0.489,close:0.489,volume:599638},
+    {date:'2026-05-14',open:0.490,high:0.491,low:0.467,close:0.483,volume:1190000},
+    {date:'2026-05-18',open:0.475,high:0.475,low:0.437,close:0.437,volume:2336000},
+    {date:'2026-05-19',open:0.440,high:0.440,low:0.412,close:0.412,volume:1127000},
+    {date:'2026-05-20',open:0.410,high:0.410,low:0.396,close:0.400,volume:2012000},
+    {date:'2026-05-21',open:0.402,high:0.430,low:0.402,close:0.429,volume:7032000},
+    {date:'2026-05-25',open:0.434,high:0.434,low:0.429,close:0.433,volume:460980},
+    {date:'2026-06-01',open:0.436,high:0.436,low:0.428,close:0.430,volume:726770},
+    {date:'2026-06-02',open:0.428,high:0.432,low:0.424,close:0.430,volume:1452000},
+    {date:'2026-06-03',open:0.429,high:0.430,low:0.421,close:0.424,volume:1288000},
+    {date:'2026-06-04',open:0.427,high:0.428,low:0.423,close:0.425,volume:1021000},
+    {date:'2026-06-08',open:0.412,high:0.415,low:0.405,close:0.415,volume:1477000},
+    {date:'2026-06-09',open:0.413,high:0.415,low:0.409,close:0.412,volume:1507000},
+    {date:'2026-06-10',open:0.412,high:0.423,low:0.410,close:0.412,volume:2046000},
+    {date:'2026-06-11',open:0.413,high:0.414,low:0.408,close:0.411,volume:922260},
+  ],
+  VOES:[],
+};
+
 let data = Object.fromEntries(STOCKS.map(s=>[s.sym,[]]));
 
 // ── STORAGE ─────────────────────────────────────────────
-function loadData(){try{const s=localStorage.getItem('msxpro');if(s){const d=JSON.parse(s);STOCKS.forEach(st=>{if(d[st.sym])data[st.sym]=d[st.sym];});}}catch(e){}}
+function loadData(){
+  try{
+    const s=localStorage.getItem('msxpro');
+    const saved=s?JSON.parse(s):{};
+    STOCKS.forEach(st=>{
+      const preloaded=PRELOADED[st.sym]||[];
+      const savedArr=saved[st.sym]||[];
+      // Merge: start with preloaded, add any saved dates not in preloaded
+      const merged=[...preloaded];
+      savedArr.forEach(c=>{
+        if(!merged.find(x=>x.date===c.date))merged.push(c);
+      });
+      merged.sort((a,b)=>a.date.localeCompare(b.date));
+      data[st.sym]=merged;
+    });
+  }catch(e){
+    STOCKS.forEach(st=>{data[st.sym]=[...(PRELOADED[st.sym]||[])];});
+  }
+}
 function saveData(){try{localStorage.setItem('msxpro',JSON.stringify(data));}catch(e){}}
 loadData();
 
@@ -479,18 +634,43 @@ function runAnalysis(){
   else if(bullPct<=0.4){signal='🔴 إشارة بيع';sigClass='sig-sell';}
   else{signal='🟡 انتظار';sigClass='sig-wait';}
 
-  // Smart Stop Loss & Target based on SR
+  // Smart Entry, Stop Loss & Target based on SR
   const atrV=atrVal||(last.high-last.low);
-  let stopLoss,target;
-  // Find nearest support below current price for stop loss
+  const pip=0.001; // minimum price step
+  let stopLoss,target,entry,entryReason;
+
+  // Find nearest support below current price
   const supportsBelow=sr.supports.filter(s=>s.price<last.close).sort((a,b)=>b.price-a.price);
   const resistancesAbove=sr.resistances.filter(r=>r.price>last.close).sort((a,b)=>a.price-b.price);
-  if(supportsBelow.length>0){stopLoss=+(supportsBelow[0].price-0.002).toFixed(3);}
-  else{stopLoss=+(last.close-atrV*1.5).toFixed(3);}
-  if(resistancesAbove.length>0){target=+(resistancesAbove[0].price).toFixed(3);}
-  else{target=+(last.close+atrV*2.5).toFixed(3);}
-  const risk=last.close-stopLoss;
-  const reward=target-last.close;
+  // Find resistances that were just broken (price closed above them)
+  const brokenResistances=sr.resistances.filter(r=>r.price<last.close&&r.price>last.close-atrV*2).sort((a,b)=>b.price-a.price);
+
+  // حالة 1: كسر مقاومة - السعر أغلق فوق مقاومة
+  if(brokenResistances.length>0&&last.close>brokenResistances[0].price){
+    entry=+(brokenResistances[0].price+pip*2).toFixed(3);
+    stopLoss=+(brokenResistances[0].price-pip*3).toFixed(3);
+    entryReason='كسر مقاومة 🚀';
+  }
+  // حالة 2: الدخول عند دعم
+  else if(supportsBelow.length>0){
+    entry=+(supportsBelow[0].price+pip*2).toFixed(3);
+    stopLoss=+(supportsBelow[0].price-pip*3).toFixed(3);
+    entryReason='عند مستوى الدعم 🎯';
+  }
+  // حالة 3: لا يوجد SR واضح - نستخدم ATR
+  else{
+    entry=+(last.close).toFixed(3);
+    stopLoss=+(last.close-atrV*1.5).toFixed(3);
+    entryReason='سعر السوق';
+  }
+
+  // الهدف عند أقرب مقاومة فوق نقطة الدخول
+  const resistancesAboveEntry=sr.resistances.filter(r=>r.price>entry).sort((a,b)=>a.price-b.price);
+  if(resistancesAboveEntry.length>0){target=+(resistancesAboveEntry[0].price).toFixed(3);}
+  else{target=+(entry+atrV*2.5).toFixed(3);}
+
+  const risk=entry-stopLoss;
+  const reward=target-entry;
   const rr=risk>0?(reward/risk).toFixed(2):'--';
 
   // Color helper
