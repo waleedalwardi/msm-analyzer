@@ -505,21 +505,26 @@ function mfi(candles,p=14){
 }
 
 // ── SUPPORT & RESISTANCE ─────────────────────────────────
-function findSupportResistance(candles,n=5){
-  if(candles.length<n*2)return{supports:[],resistances:[]};
+function findSupportResistance(candles,n=3){
+  if(candles.length<n*2+1)return{supports:[],resistances:[]};
   const supports=[],resistances=[];
   for(let i=n;i<candles.length-n;i++){
     let isLow=true,isHigh=true;
     for(let j=i-n;j<=i+n;j++){
       if(j===i)continue;
-      if(candles[j].low<=candles[i].low)isLow=false;
-      if(candles[j].high>=candles[i].high)isHigh=false;
+      if(candles[j].low<candles[i].low)isLow=false;
+      if(candles[j].high>candles[i].high)isHigh=false;
     }
     if(isLow)supports.push(candles[i].low);
     if(isHigh)resistances.push(candles[i].high);
   }
-  // Cluster nearby levels
-  function cluster(levels,tol=0.005){
+  // Also add recent highs/lows as potential levels
+  const recent=candles.slice(-10);
+  supports.push(Math.min(...recent.map(c=>c.low)));
+  resistances.push(Math.max(...recent.map(c=>c.high)));
+
+  function cluster(levels,tol=0.008){
+    if(!levels.length)return[];
     const sorted=[...levels].sort((a,b)=>a-b);
     const clusters=[];
     sorted.forEach(l=>{
@@ -527,7 +532,7 @@ function findSupportResistance(candles,n=5){
       if(last&&Math.abs(l-last.avg)/last.avg<tol){last.sum+=l;last.count++;last.avg=last.sum/last.count;}
       else clusters.push({avg:l,sum:l,count:1});
     });
-    return clusters.sort((a,b)=>b.count-a.count).slice(0,3).map(c=>({price:+c.avg.toFixed(3),strength:c.count}));
+    return clusters.sort((a,b)=>b.count-a.count).slice(0,4).map(c=>({price:+c.avg.toFixed(3),strength:c.count}));
   }
   return{supports:cluster(supports),resistances:cluster(resistances)};
 }
@@ -546,32 +551,147 @@ function fibonacci(high,low){
   ];
 }
 
+// ── TREND DETECTION ──────────────────────────────────────
+function detectTrend(candles){
+  if(candles.length<5)return{trend:'غير محدد',strength:0,class:'neutral'};
+  const closes=candles.map(c=>c.close);
+  const highs=candles.map(c=>c.high);
+  const lows=candles.map(c=>c.low);
+  const n=candles.length;
+  // Higher highs and higher lows = uptrend
+  const recentHighs=highs.slice(-5);
+  const recentLows=lows.slice(-5);
+  const hhCount=recentHighs.filter((h,i)=>i>0&&h>recentHighs[i-1]).length;
+  const hlCount=recentLows.filter((l,i)=>i>0&&l>recentLows[i-1]).length;
+  const lhCount=recentHighs.filter((h,i)=>i>0&&h<recentHighs[i-1]).length;
+  const llCount=recentLows.filter((l,i)=>i>0&&l<recentLows[i-1]).length;
+  if(hhCount>=3&&hlCount>=2)return{trend:'ترند صاعد 📈',strength:hhCount+hlCount,class:'bull'};
+  if(lhCount>=3&&llCount>=2)return{trend:'ترند هابط 📉',strength:lhCount+llCount,class:'bear'};
+  return{trend:'ترند جانبي ↔️',strength:0,class:'neutral'};
+}
+
 // ── CANDLE PATTERNS ──────────────────────────────────────
 function detectPattern(candles){
-  if(candles.length<3)return null;
+  if(candles.length<3)return[];
   const c=candles[candles.length-1];
   const p=candles[candles.length-2];
   const pp=candles[candles.length-3];
   const body=Math.abs(c.close-c.open);
-  const range=c.high-c.low;
+  const range=c.high-c.low||0.001;
   const upperShadow=c.high-Math.max(c.open,c.close);
   const lowerShadow=Math.min(c.open,c.close)-c.low;
   const patterns=[];
-  // Doji
-  if(body/range<0.1)patterns.push({name:'دوجي',desc:'تردد في السوق',type:'neutral'});
-  // Hammer
+  if(body/range<0.1)patterns.push({name:'دوجي ➖',desc:'تردد وتوقف في السوق',type:'neutral'});
   if(lowerShadow>body*2&&upperShadow<body*0.5&&c.close>c.open)patterns.push({name:'المطرقة 🔨',desc:'انعكاس صعودي محتمل',type:'bull'});
-  // Shooting star
   if(upperShadow>body*2&&lowerShadow<body*0.5&&c.close<c.open)patterns.push({name:'النجمة الساقطة ⭐',desc:'انعكاس هبوطي محتمل',type:'bear'});
-  // Bullish engulfing
-  if(p.close<p.open&&c.close>c.open&&c.open<p.close&&c.close>p.open)patterns.push({name:'الابتلاع الصعودي',desc:'إشارة شراء قوية',type:'bull'});
-  // Bearish engulfing
-  if(p.close>p.open&&c.close<c.open&&c.open>p.close&&c.close<p.open)patterns.push({name:'الابتلاع الهبوطي',desc:'إشارة بيع قوية',type:'bear'});
-  // Morning star
-  if(pp.close<pp.open&&Math.abs(p.close-p.open)/(p.high-p.low)<0.3&&c.close>c.open&&c.close>pp.open)patterns.push({name:'نجمة الصباح 🌅',desc:'انعكاس صعودي قوي',type:'bull'});
-  // Evening star
-  if(pp.close>pp.open&&Math.abs(p.close-p.open)/(p.high-p.low)<0.3&&c.close<c.open&&c.close<pp.open)patterns.push({name:'نجمة المساء 🌆',desc:'انعكاس هبوطي قوي',type:'bear'});
-  return patterns.length>0?patterns[0]:null;
+  if(lowerShadow>body*2&&upperShadow<body*0.5&&c.close<c.open)patterns.push({name:'الرجل المشنوق 🪢',desc:'تحذير هبوطي',type:'bear'});
+  if(p.close<p.open&&c.close>c.open&&c.open<p.close&&c.close>p.open)patterns.push({name:'الابتلاع الصعودي 🟢',desc:'إشارة شراء قوية',type:'bull'});
+  if(p.close>p.open&&c.close<c.open&&c.open>p.close&&c.close<p.open)patterns.push({name:'الابتلاع الهبوطي 🔴',desc:'إشارة بيع قوية',type:'bear'});
+  if(pp.close<pp.open&&Math.abs(p.close-p.open)/range<0.3&&c.close>c.open&&c.close>pp.open)patterns.push({name:'نجمة الصباح 🌅',desc:'انعكاس صعودي قوي',type:'bull'});
+  if(pp.close>pp.open&&Math.abs(p.close-p.open)/range<0.3&&c.close<c.open&&c.close<pp.open)patterns.push({name:'نجمة المساء 🌆',desc:'انعكاس هبوطي قوي',type:'bear'});
+  if(pp.close<pp.open&&p.close>p.open&&c.close<c.open&&c.close>pp.close&&c.open<p.close)patterns.push({name:'ثلاثة جنود بيض 💂',desc:'صعود قوي مستمر',type:'bull'});
+  if(pp.close>pp.open&&p.close<p.open&&c.close>c.open&&c.close<pp.close&&c.open>p.close)patterns.push({name:'ثلاثة غربان سود 🦅',desc:'هبوط قوي مستمر',type:'bear'});
+  return patterns;
+}
+
+// ── CHART PATTERNS ───────────────────────────────────────
+function detectChartPatterns(candles){
+  if(candles.length<10)return[];
+  const patterns=[];
+  const highs=candles.map(c=>c.high);
+  const lows=candles.map(c=>c.low);
+  const closes=candles.map(c=>c.close);
+  const n=candles.length;
+
+  // ── Double Top (قمة ثنائية) ──
+  const last10H=highs.slice(-15);
+  const maxH=Math.max(...last10H);
+  const maxIdx=last10H.lastIndexOf(maxH);
+  const prevMaxIdx=last10H.indexOf(maxH);
+  if(maxIdx!==prevMaxIdx&&Math.abs(maxIdx-prevMaxIdx)>=3){
+    const valleyLow=Math.min(...last10H.slice(prevMaxIdx,maxIdx));
+    if((maxH-valleyLow)/maxH>0.02)
+      patterns.push({name:'قمة ثنائية 🔝🔝',desc:'نموذج انعكاسي هبوطي - يشير لنزول محتمل',type:'bear',reliability:'عالية'});
+  }
+
+  // ── Double Bottom (قاع ثنائي) ──
+  const last10L=lows.slice(-15);
+  const minL=Math.min(...last10L);
+  const minIdx=last10L.lastIndexOf(minL);
+  const prevMinIdx=last10L.indexOf(minL);
+  if(minIdx!==prevMinIdx&&Math.abs(minIdx-prevMinIdx)>=3){
+    const peakHigh=Math.max(...last10L.slice(prevMinIdx,minIdx));
+    if((peakHigh-minL)/peakHigh>0.02)
+      patterns.push({name:'قاع ثنائي 📉📉',desc:'نموذج انعكاسي صعودي - يشير لارتفاع محتمل',type:'bull',reliability:'عالية'});
+  }
+
+  // ── Head & Shoulders (رأس وكتفين) ──
+  if(n>=15){
+    const sl=closes.slice(-15);
+    const mid=Math.floor(sl.length/2);
+    const leftShoulder=Math.max(...sl.slice(0,mid-2));
+    const head=Math.max(...sl.slice(mid-2,mid+3));
+    const rightShoulder=Math.max(...sl.slice(mid+2));
+    if(head>leftShoulder*1.02&&head>rightShoulder*1.02&&Math.abs(leftShoulder-rightShoulder)/leftShoulder<0.05)
+      patterns.push({name:'رأس وكتفين 👤',desc:'نموذج انعكاسي هبوطي قوي جداً',type:'bear',reliability:'عالية جداً'});
+    // Inverse H&S
+    const leftShoulderL=Math.min(...sl.slice(0,mid-2));
+    const headL=Math.min(...sl.slice(mid-2,mid+3));
+    const rightShoulderL=Math.min(...sl.slice(mid+2));
+    if(headL<leftShoulderL*0.98&&headL<rightShoulderL*0.98&&Math.abs(leftShoulderL-rightShoulderL)/leftShoulderL<0.05)
+      patterns.push({name:'رأس وكتفين معكوس 🙃',desc:'نموذج انعكاسي صعودي قوي جداً',type:'bull',reliability:'عالية جداً'});
+  }
+
+  // ── Triangle (مثلث) ──
+  if(n>=10){
+    const rH=highs.slice(-10);
+    const rL=lows.slice(-10);
+    const highTrend=rH[rH.length-1]-rH[0];
+    const lowTrend=rL[rL.length-1]-rL[0];
+    if(highTrend<0&&lowTrend>0&&Math.abs(highTrend)<Math.abs(rH[0]*0.05))
+      patterns.push({name:'مثلث متماثل 🔺',desc:'نموذج استمرار - انتظر الكسر للتأكيد',type:'neutral',reliability:'متوسطة'});
+    if(highTrend<-0.001&&Math.abs(lowTrend)<0.001)
+      patterns.push({name:'مثلث هابط 🔻',desc:'نموذج هبوطي - ضغط بيعي متراكم',type:'bear',reliability:'متوسطة'});
+    if(lowTrend>0.001&&Math.abs(highTrend)<0.001)
+      patterns.push({name:'مثلث صاعد 🔺',desc:'نموذج صعودي - ضغط شرائي متراكم',type:'bull',reliability:'متوسطة'});
+  }
+
+  // ── Flag (علم) ──
+  if(n>=8){
+    const flagPole=closes[n-8]-closes[n-12>0?n-12:0];
+    const flagBody=closes[n-1]-closes[n-5];
+    if(flagPole>0&&flagBody<0&&Math.abs(flagBody)<Math.abs(flagPole)*0.5)
+      patterns.push({name:'علم صاعد 🚩',desc:'استراحة قصيرة قبل استمرار الصعود',type:'bull',reliability:'متوسطة'});
+    if(flagPole<0&&flagBody>0&&Math.abs(flagBody)<Math.abs(flagPole)*0.5)
+      patterns.push({name:'علم هابط 🏳️',desc:'استراحة قصيرة قبل استمرار الهبوط',type:'bear',reliability:'متوسطة'});
+  }
+
+  // ── Cup & Handle (الكوب) ──
+  if(n>=15){
+    const cup=closes.slice(-15);
+    const cupMin=Math.min(...cup);
+    const cupMinIdx=cup.indexOf(cupMin);
+    if(cupMinIdx>3&&cupMinIdx<cup.length-3){
+      const leftRim=Math.max(...cup.slice(0,cupMinIdx));
+      const rightRim=Math.max(...cup.slice(cupMinIdx));
+      if(Math.abs(leftRim-rightRim)/leftRim<0.05&&cup[cup.length-1]<rightRim*0.98)
+        patterns.push({name:'الكوب والمقبض ☕',desc:'نموذج صعودي قوي - انتظر كسر الحافة',type:'bull',reliability:'عالية'});
+    }
+  }
+
+  // ── Wedge (الوتد) ──
+  if(n>=10){
+    const wH=highs.slice(-10);
+    const wL=lows.slice(-10);
+    const hSlope=(wH[wH.length-1]-wH[0])/wH.length;
+    const lSlope=(wL[wL.length-1]-wL[0])/wL.length;
+    if(hSlope>0&&lSlope>0&&hSlope<lSlope)
+      patterns.push({name:'وتد صاعد 📐',desc:'نموذج انعكاسي هبوطي - الضغط يتراكم',type:'bear',reliability:'متوسطة'});
+    if(hSlope<0&&lSlope<0&&hSlope>lSlope)
+      patterns.push({name:'وتد هابط 📐',desc:'نموذج انعكاسي صعودي - الضغط يتراكم',type:'bull',reliability:'متوسطة'});
+  }
+
+  return patterns;
 }
 
 // ── MAIN ANALYSIS ────────────────────────────────────────
@@ -606,11 +726,17 @@ function runAnalysis(){
   const swingLow=Math.min(...lows.slice(-20));
   const fibLevels=fibonacci(swingHigh,swingLow);
 
-  // Pattern
-  const pattern=detectPattern(candles);
+  // Pattern & Trend
+  const candlePatterns=detectPattern(candles);
+  const chartPatterns=detectChartPatterns(candles);
+  const trendInfo=detectTrend(candles);
+  const pattern=candlePatterns.length>0?candlePatterns[0]:null;
 
   // Signals
   let bull=0,bear=0;
+  // Trend signal
+  if(trendInfo.class==='bull')bull+=1;
+  else if(trendInfo.class==='bear')bear+=1;
   let rsiS='محايد',rsiC='neutral';
   if(rsiVal!==null){if(rsiVal<35){rsiS='تشبع بيع 📉';rsiC='bull';bull++;}else if(rsiVal>65){rsiS='تشبع شراء 📈';rsiC='bear';bear++;}else if(rsiVal>50){bull+=0.5;}else{bear+=0.5;}}
   let macdS='محايد',macdC='neutral';
@@ -636,30 +762,31 @@ function runAnalysis(){
 
   // Smart Entry, Stop Loss & Target based on SR
   const atrV=atrVal||(last.high-last.low);
-  const pip=0.001; // minimum price step
   let stopLoss,target,entry,entryReason;
 
   // Find nearest support below current price
   const supportsBelow=sr.supports.filter(s=>s.price<last.close).sort((a,b)=>b.price-a.price);
   const resistancesAbove=sr.resistances.filter(r=>r.price>last.close).sort((a,b)=>a.price-b.price);
-  // Find resistances that were just broken (price closed above them)
-  const brokenResistances=sr.resistances.filter(r=>r.price<last.close&&r.price>last.close-atrV*2).sort((a,b)=>b.price-a.price);
+  // Find resistances broken (price closed above resistance)
+  const brokenResistances=sr.resistances.filter(r=>r.price<last.close&&r.price>last.close-atrV*3).sort((a,b)=>b.price-a.price);
 
-  // حالة 1: كسر مقاومة - السعر أغلق فوق مقاومة
-  if(brokenResistances.length>0&&last.close>brokenResistances[0].price){
-    entry=+(brokenResistances[0].price+pip*2).toFixed(3);
-    stopLoss=+(brokenResistances[0].price-pip*3).toFixed(3);
+  // حالة 1: كسر مقاومة - الدخول فوق المقاومة المكسورة مباشرة
+  if(brokenResistances.length>0){
+    const res=brokenResistances[0].price;
+    entry=+(res+0.001).toFixed(3);
+    stopLoss=+(res-0.002).toFixed(3);
     entryReason='كسر مقاومة 🚀';
   }
-  // حالة 2: الدخول عند دعم
+  // حالة 2: الدخول عند أقرب دعم (انتظر السعر يرجع للدعم)
   else if(supportsBelow.length>0){
-    entry=+(supportsBelow[0].price+pip*2).toFixed(3);
-    stopLoss=+(supportsBelow[0].price-pip*3).toFixed(3);
-    entryReason='عند مستوى الدعم 🎯';
+    const sup=supportsBelow[0].price;
+    entry=+(sup+0.001).toFixed(3);
+    stopLoss=+(sup-0.002).toFixed(3);
+    entryReason='انتظر عند الدعم 🎯';
   }
-  // حالة 3: لا يوجد SR واضح - نستخدم ATR
+  // حالة 3: ATR
   else{
-    entry=+(last.close).toFixed(3);
+    entry=+(last.close-atrV*0.5).toFixed(3);
     stopLoss=+(last.close-atrV*1.5).toFixed(3);
     entryReason='سعر السوق';
   }
@@ -686,11 +813,30 @@ function runAnalysis(){
       <div class="sig-badge ${sigClass}">${signal}</div>
     </div>
 
-    <!-- PATTERN -->
-    ${pattern?`<div class="pattern-box">
-      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">🕯️ نمط الشمعة</div>
-      <div style="font-size:15px;font-weight:700;color:${cc(pattern.type)}">${pattern.name}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px">${pattern.desc}</div>
+    <!-- TREND -->
+    <div class="pattern-box" style="margin:0 14px 12px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px">📊 الترند</div>
+      <div style="font-size:15px;font-weight:700;color:${cc(trendInfo.class)}">${trendInfo.trend}</div>
+    </div>
+
+    <!-- CANDLE PATTERN -->
+    ${candlePatterns.length>0?`<div class="pattern-box" style="margin:0 14px 12px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">🕯️ نماذج الشموع</div>
+      ${candlePatterns.map(pt=>`<div style="margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700;color:${cc(pt.type)}">${pt.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${pt.desc}</div>
+      </div>`).join('')}
+    </div>`:''}
+
+    <!-- CHART PATTERNS -->
+    ${chartPatterns.length>0?`<div class="pattern-box" style="margin:0 14px 12px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">📐 النماذج السعرية</div>
+      ${chartPatterns.map(pt=>`<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;color:${cc(pt.type)}">${pt.name}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pt.desc}</div>
+        <div style="font-size:9px;color:var(--accent);margin-top:2px">موثوقية: ${pt.reliability}</div>
+      </div>`).join('')}
+      <div style="font-size:9px;color:var(--muted);margin-top:4px">⚠️ تأكد بصرياً من النموذج على الشارت</div>
     </div>`:''}
 
     <!-- INDICATORS -->
